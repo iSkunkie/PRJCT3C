@@ -18,7 +18,15 @@ if ($db->connect_error) {
     die('Connection failed: ' . $db->connect_error);
 }
 
-$query = 'SELECT * FROM customer';
+// Search functionality
+$search = '';
+if (isset($_GET['search'])) {
+    $search = $_GET['search'];
+    $query = "SELECT * FROM customer WHERE firstname LIKE '%$search%' OR lastname LIKE '%$search%'";
+} else {
+    $query = 'SELECT * FROM customer';
+}
+
 $result = $db->query($query);
 
 $customers = [];
@@ -43,6 +51,12 @@ $db->close();
     <h2>Customer List</h2>
     <a href="admin_panel.php">Back to Admin Panel</a><br>
     <a href="add_customer.php">Add New Customer</a><br>
+
+    <!-- Search form -->
+    <form method="GET" action="customer_list.php">
+        <input type="text" name="search" placeholder="Search by name" value="<?php echo $search; ?>">
+        <input type="submit" value="Search">
+    </form>
 
     <table>
         <tr>

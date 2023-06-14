@@ -43,7 +43,8 @@ if (!isset($_SESSION['username'])) {
 </head>
 
 <body>
-    <h2>Welcome to the Admin Panel, <?php echo $_SESSION['username']; ?>!</h2>
+    <h2>Welcome <?php echo $_SESSION['username']; ?>!</h2>
+    <p>What would you like to do today?</p>
     <a href="customer_list.php">Manage Customers</a><br>
     <form method="POST" action="">
         <input type="submit" name="logout" value="Logout">
