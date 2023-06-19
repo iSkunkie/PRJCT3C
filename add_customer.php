@@ -29,14 +29,14 @@ class CustomerAdder
         // Retrieve the form data
         $firstname = $data['firstname'];
         $lastname = $data['lastname'];
-        $address = $data['address'];
+        $address = $data['adress'];
         $zipcode = $data['zipcode'];
         $phonenumber = $data['phonenumber'];
 
         // Validate the form data (you can add your own validation logic here)
 
         // Insert the customer into the database
-        $query = "INSERT INTO customer (firstname, lastname, address, zipcode, phonenumber) VALUES ('$firstname', '$lastname', '$address', '$zipcode', '$phonenumber')";
+        $query = "INSERT INTO customer (firstname, lastname, adress, zipcode, phonenumber) VALUES ('$firstname', '$lastname', '$address', '$zipcode', '$phonenumber')";
 
         if ($this->db->query($query) === true) {
             return 'Customer added successfully!';
@@ -87,7 +87,7 @@ if (isset($_POST['add'])) {
         <input type="text" name="lastname" required><br>
 
         <label>Address:</label>
-        <input type="text" name="address" required><br>
+        <input type="text" name="adress" required><br>
 
         <label>Zipcode:</label>
         <input type="text" name="zipcode" required><br>

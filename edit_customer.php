@@ -41,14 +41,14 @@ class CustomerEditor
         // Retrieve the form data
         $firstname = $data['firstname'];
         $lastname = $data['lastname'];
-        $address = $data['address'];
+        $adress = $data['adress'];
         $zipcode = $data['zipcode'];
         $phonenumber = $data['phonenumber'];
 
         // Validate the form data (you can add your own validation logic here)
 
         // Update the customer in the database
-        $query = "UPDATE customer SET firstname = '$firstname', lastname = '$lastname', address = '$address', zipcode = '$zipcode', phonenumber = '$phonenumber' WHERE customerid = '$id'";
+        $query = "UPDATE customer SET firstname = '$firstname', lastname = '$lastname', adress = '$adress', zipcode = '$zipcode', phonenumber = '$phonenumber' WHERE customerid = '$id'";
 
         if ($this->db->query($query) === true) {
             return 'Customer updated successfully!';
@@ -114,7 +114,7 @@ if (isset($_POST['update'])) {
         <input type="text" name="lastname" value="<?php echo $customer['lastname']; ?>" required><br>
 
         <label>Address:</label>
-        <input type="text" name="address" value="<?php echo $customer['address']; ?>" required><br>
+        <input type="text" name="adress" value="<?php echo $customer['adress']; ?>" required><br>
 
         <label>Zipcode:</label>
         <input type="text" name="zipcode" value="<?php echo $customer['zipcode']; ?>" required><br>
