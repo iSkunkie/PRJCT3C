@@ -1,43 +1,67 @@
 <?php
 session_start();
 
-if (!isset($_SESSION['username'])) {
+class CustomerAdder
+{
+    private $db;
+
+    public function __construct()
+    {
+        $host = 'localhost';
+        $username = 'root';
+        $password = '';
+        $database = 'garage2';
+
+        $this->db = new mysqli($host, $username, $password, $database);
+
+        if ($this->db->connect_error) {
+            die('Connection failed: ' . $this->db->connect_error);
+        }
+    }
+
+    public function isLoggedIn()
+    {
+        return isset($_SESSION['username']);
+    }
+
+    public function addCustomer($data)
+    {
+        // Retrieve the form data
+        $firstname = $data['firstname'];
+        $lastname = $data['lastname'];
+        $address = $data['address'];
+        $zipcode = $data['zipcode'];
+        $phonenumber = $data['phonenumber'];
+
+        // Validate the form data (you can add your own validation logic here)
+
+        // Insert the customer into the database
+        $query = "INSERT INTO customer (firstname, lastname, address, zipcode, phonenumber) VALUES ('$firstname', '$lastname', '$address', '$zipcode', '$phonenumber')";
+
+        if ($this->db->query($query) === true) {
+            return 'Customer added successfully!';
+        } else {
+            return 'Error adding customer: ' . $this->db->error;
+        }
+    }
+
+    public function closeDatabase()
+    {
+        $this->db->close();
+    }
+}
+
+$adder = new CustomerAdder();
+
+if (!$adder->isLoggedIn()) {
     header('Location: login.php');
     exit();
 }
 
 if (isset($_POST['add'])) {
-    // Retrieve the form data
-    $firstname = $_POST['firstname'];
-    $lastname = $_POST['lastname'];
-    $adress = $_POST['adress'];
-    $zipcode = $_POST['zipcode'];
-    $phonenumber = $_POST['phonenumber'];
-
-    // Validate the form data (you can add your own validation logic here)
-
-    // Insert the customer into the database
-    $host = 'localhost';
-    $username = 'root';
-    $password = '';
-    $database = 'garage2';
-
-    $db = new mysqli($host, $username, $password, $database);
-
-    if ($db->connect_error) {
-        die('Connection failed: ' . $db->connect_error);
-    }
-
-    $query = "INSERT INTO customer (firstname, lastname, adress, zipcode, phonenumber) VALUES ('$firstname', '$lastname', '$adress', '$zipcode', '$phonenumber')";
-
-    if ($db->query($query) === true) {
-        $success = 'Customer added successfully!';
-    } else {
-        $error = 'Error adding customer: ' . $db->error;
-    }
-
-    $db->close();
+    $message = $adder->addCustomer($_POST);
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -51,12 +75,8 @@ if (isset($_POST['add'])) {
     <h2>Add Customer</h2>
     <a href="customer_list.php">Back to Customer List</a><br>
 
-    <?php if (isset($success)) { ?>
-        <p><?php echo $success; ?></p>
-    <?php } ?>
-
-    <?php if (isset($error)) { ?>
-        <p><?php echo $error; ?></p>
+    <?php if (isset($message)) { ?>
+        <p><?php echo $message; ?></p>
     <?php } ?>
 
     <form method="POST" action="add_customer.php">
@@ -66,8 +86,8 @@ if (isset($_POST['add'])) {
         <label>Lastname:</label>
         <input type="text" name="lastname" required><br>
 
-        <label>Adress:</label>
-        <input type="text" name="adress" required><br>
+        <label>Address:</label>
+        <input type="text" name="address" required><br>
 
         <label>Zipcode:</label>
         <input type="text" name="zipcode" required><br>
@@ -77,6 +97,10 @@ if (isset($_POST['add'])) {
 
         <input type="submit" name="add" value="Add Customer">
     </form>
+
+    <?php
+    $adder->closeDatabase();
+    ?>
 </body>
 
 </html>

@@ -1,7 +1,71 @@
 <?php
 session_start();
 
-if (!isset($_SESSION['username'])) {
+class CustomerEditor
+{
+    private $db;
+
+    public function __construct()
+    {
+        $host = 'localhost';
+        $username = 'root';
+        $password = '';
+        $database = 'garage2';
+
+        $this->db = new mysqli($host, $username, $password, $database);
+
+        if ($this->db->connect_error) {
+            die('Connection failed: ' . $this->db->connect_error);
+        }
+    }
+
+    public function isLoggedIn()
+    {
+        return isset($_SESSION['username']);
+    }
+
+    public function getCustomer($id)
+    {
+        $query = "SELECT * FROM customer WHERE customerid = '$id'";
+        $result = $this->db->query($query);
+
+        if ($result->num_rows === 0) {
+            return null;
+        }
+
+        return $result->fetch_assoc();
+    }
+
+    public function updateCustomer($id, $data)
+    {
+        // Retrieve the form data
+        $firstname = $data['firstname'];
+        $lastname = $data['lastname'];
+        $address = $data['address'];
+        $zipcode = $data['zipcode'];
+        $phonenumber = $data['phonenumber'];
+
+        // Validate the form data (you can add your own validation logic here)
+
+        // Update the customer in the database
+        $query = "UPDATE customer SET firstname = '$firstname', lastname = '$lastname', address = '$address', zipcode = '$zipcode', phonenumber = '$phonenumber' WHERE customerid = '$id'";
+
+        if ($this->db->query($query) === true) {
+            return 'Customer updated successfully!';
+        } else {
+            return 'Error updating customer: ' . $this->db->error;
+        }
+    }
+
+    public function closeDatabase()
+    {
+        $this->db->close();
+    }
+}
+
+$editor = new CustomerEditor();
+
+if (!$editor->isLoggedIn()) {
     header('Location: login.php');
     exit();
 }
@@ -14,49 +78,17 @@ if (isset($_GET['id'])) {
     exit();
 }
 
-// Fetch the customer from the database
-$host = 'localhost';
-$username = 'root';
-$password = '';
-$database = 'garage2';
+$customer = $editor->getCustomer($id);
 
-$db = new mysqli($host, $username, $password, $database);
-
-if ($db->connect_error) {
-    die('Connection failed: ' . $db->connect_error);
-}
-
-$query = "SELECT * FROM customer WHERE customerid = '$id'";
-$result = $db->query($query);
-
-if ($result->num_rows === 0) {
+if (!$customer) {
     header('Location: customer_list.php');
     exit();
 }
 
-$customer = $result->fetch_assoc();
-
 if (isset($_POST['update'])) {
-    // Retrieve the form data
-    $firstname = $_POST['firstname'];
-    $lastname = $_POST['lastname'];
-    $adress = $_POST['adress'];
-    $zipcode = $_POST['zipcode'];
-    $phonenumber = $_POST['phonenumber'];
-
-    // Validate the form data (you can add your own validation logic here)
-
-    // Update the customer in the database
-    $query = "UPDATE customer SET firstname = '$firstname', lastname = '$lastname', adress = '$adress', zipcode = '$zipcode', phonenumber = '$phonenumber' WHERE customerid = '$id'";
-
-    if ($db->query($query) === true) {
-        $success = 'Customer updated successfully!';
-    } else {
-        $error = 'Error updating customer: ' . $db->error;
-    }
+    $message = $editor->updateCustomer($id, $_POST);
 }
 
-$db->close();
 ?>
 
 <!DOCTYPE html>
@@ -70,12 +102,8 @@ $db->close();
     <h2>Edit Customer</h2>
     <a href="customer_list.php">Back to Customer List</a><br>
 
-    <?php if (isset($success)) { ?>
-        <p><?php echo $success; ?></p>
-    <?php } ?>
-
-    <?php if (isset($error)) { ?>
-        <p><?php echo $error; ?></p>
+    <?php if (isset($message)) { ?>
+        <p><?php echo $message; ?></p>
     <?php } ?>
 
     <form method="POST" action="edit_customer.php?id=<?php echo $id; ?>">
@@ -85,8 +113,8 @@ $db->close();
         <label>Lastname:</label>
         <input type="text" name="lastname" value="<?php echo $customer['lastname']; ?>" required><br>
 
-        <label>Adress:</label>
-        <input type="text" name="adress" value="<?php echo $customer['adress']; ?>" required><br>
+        <label>Address:</label>
+        <input type="text" name="address" value="<?php echo $customer['address']; ?>" required><br>
 
         <label>Zipcode:</label>
         <input type="text" name="zipcode" value="<?php echo $customer['zipcode']; ?>" required><br>
@@ -96,6 +124,10 @@ $db->close();
 
         <input type="submit" name="update" value="Update Customer">
     </form>
+
+    <?php
+    $editor->closeDatabase();
+    ?>
 </body>
 
 </html>

@@ -1,7 +1,49 @@
 <?php
 session_start();
 
-if (!isset($_SESSION['username'])) {
+class CustomerDeleter
+{
+    private $db;
+
+    public function __construct()
+    {
+        $host = 'localhost';
+        $username = 'root';
+        $password = '';
+        $database = 'garage2';
+
+        $this->db = new mysqli($host, $username, $password, $database);
+
+        if ($this->db->connect_error) {
+            die('Connection failed: ' . $this->db->connect_error);
+        }
+    }
+
+    public function isLoggedIn()
+    {
+        return isset($_SESSION['username']);
+    }
+
+    public function deleteCustomer($id)
+    {
+        $query = "DELETE FROM customer WHERE customerid = '$id'";
+
+        if ($this->db->query($query) === true) {
+            return 'Customer deleted successfully!';
+        } else {
+            return 'Error deleting customer: ' . $this->db->error;
+        }
+    }
+
+    public function closeDatabase()
+    {
+        $this->db->close();
+    }
+}
+
+$deleter = new CustomerDeleter();
+
+if (!$deleter->isLoggedIn()) {
     header('Location: login.php');
     exit();
 }
@@ -14,27 +56,8 @@ if (isset($_GET['id'])) {
     exit();
 }
 
-// Delete the customer from the database
-$host = 'localhost';
-$username = 'root';
-$password = '';
-$database = 'garage2';
+$message = $deleter->deleteCustomer($id);
 
-$db = new mysqli($host, $username, $password, $database);
-
-if ($db->connect_error) {
-    die('Connection failed: ' . $db->connect_error);
-}
-
-$query = "DELETE FROM customer WHERE customerid = '$id'";
-
-if ($db->query($query) === true) {
-    $success = 'Customer deleted successfully!';
-} else {
-    $error = 'Error deleting customer: ' . $db->error;
-}
-
-$db->close();
 ?>
 
 <!DOCTYPE html>
@@ -48,13 +71,13 @@ $db->close();
     <h2>Delete Customer</h2>
     <a href="customer_list.php">Back to Customer List</a><br>
 
-    <?php if (isset($success)) { ?>
-        <p><?php echo $success; ?></p>
+    <?php if (isset($message)) { ?>
+        <p><?php echo $message; ?></p>
     <?php } ?>
 
-    <?php if (isset($error)) { ?>
-        <p><?php echo $error; ?></p>
-    <?php } ?>
+    <?php
+    $deleter->closeDatabase();
+    ?>
 </body>
 
 </html>

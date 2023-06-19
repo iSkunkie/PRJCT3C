@@ -1,43 +1,67 @@
 <?php
 session_start();
 
-if (!isset($_SESSION['username'])) {
+class CustomerCRUD
+{
+    private $db;
+
+    public function __construct()
+    {
+        $host = 'localhost';
+        $username = 'root';
+        $password = '';
+        $database = 'garage2';
+
+        $this->db = new mysqli($host, $username, $password, $database);
+
+        if ($this->db->connect_error) {
+            die('Connection failed: ' . $this->db->connect_error);
+        }
+    }
+
+    public function isLoggedIn()
+    {
+        return isset($_SESSION['username']);
+    }
+
+    public function getCustomers($search = '')
+    {
+        $customers = [];
+
+        if (!empty($search)) {
+            $query = "SELECT * FROM customer WHERE firstname LIKE '%$search%' OR lastname LIKE '%$search%'";
+        } else {
+            $query = 'SELECT * FROM customer';
+        }
+
+        $result = $this->db->query($query);
+
+        if ($result->num_rows > 0) {
+            while ($row = $result->fetch_assoc()) {
+                $customers[] = $row;
+            }
+        }
+
+        return $customers;
+    }
+
+    public function closeDatabase()
+    {
+        $this->db->close();
+    }
+}
+
+$crud = new CustomerCRUD();
+
+if (!$crud->isLoggedIn()) {
     header('Location: login.php');
     exit();
 }
 
-// Fetch the customers from the database
-$host = 'localhost';
-$username = 'root';
-$password = '';
-$database = 'garage2';
+$search = isset($_GET['search']) ? $_GET['search'] : '';
 
-$db = new mysqli($host, $username, $password, $database);
+$customers = $crud->getCustomers($search);
 
-if ($db->connect_error) {
-    die('Connection failed: ' . $db->connect_error);
-}
-
-// Search functionality
-$search = '';
-if (isset($_GET['search'])) {
-    $search = $_GET['search'];
-    $query = "SELECT * FROM customer WHERE firstname LIKE '%$search%' OR lastname LIKE '%$search%'";
-} else {
-    $query = 'SELECT * FROM customer';
-}
-
-$result = $db->query($query);
-
-$customers = [];
-
-if ($result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) {
-        $customers[] = $row;
-    }
-}
-
-$db->close();
 ?>
 
 <!DOCTYPE html>
@@ -83,6 +107,10 @@ $db->close();
             </tr>
         <?php } ?>
     </table>
+
+    <?php
+    $crud->closeDatabase();
+    ?>
 </body>
 
 </html>
