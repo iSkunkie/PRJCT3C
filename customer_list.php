@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-class CustomerCRUD
+class CustomerList
 {
     private $db;
 
@@ -51,7 +51,7 @@ class CustomerCRUD
     }
 }
 
-$crud = new CustomerCRUD();
+$crud = new CustomerList();
 
 if (!$crud->isLoggedIn()) {
     header('Location: login.php');
